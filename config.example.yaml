@@ -1,0 +1,24 @@
+app:
+  env: development
+
+server:
+  address: ":8080"
+  context_timeout: 10
+
+database:
+  host: "127.0.0.1"
+  port: "5432"
+  user: "postgres"
+  password: "postgres"
+  name: "umbrella"
+
+redis:
+  host: "127.0.0.1"
+  port: "6379"
+  password: ""
+
+jwt:
+  access_token_expiry_hour: 1
+  refresh_token_expiry_hour: 168
+  access_token_secret: "change-me"
+  refresh_token_secret: "change-me"
