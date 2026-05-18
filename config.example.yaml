@@ -4,6 +4,7 @@ app:
 server:
   address: ":8080"
   context_timeout: 10
+  public_url: "http://localhost:8080"
 
 database:
   host: "127.0.0.1"
@@ -22,3 +23,10 @@ jwt:
   refresh_token_expiry_hour: 168
   access_token_secret: "change-me"
   refresh_token_secret: "change-me"
+
+mail:
+  host: "smtp.example.com"
+  port: 587
+  username: ""
+  password: ""
+  from: "noreply@example.com"

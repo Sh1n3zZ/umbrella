@@ -19,3 +19,13 @@ type OauthClient struct {
 	CreateTime            pgtype.Timestamptz
 	Status                string
 }
+
+type OauthUser struct {
+	UserID        pgtype.UUID
+	Nickname      string
+	Email         string
+	Password      string
+	IsActive      bool
+	EmailVerified bool
+	CreatedAt     pgtype.Timestamptz
+}

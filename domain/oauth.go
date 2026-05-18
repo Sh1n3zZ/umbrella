@@ -1,6 +1,7 @@
 package domain
 
 import (
+	"context"
 	"errors"
 	"net/url"
 
@@ -11,6 +12,33 @@ const (
 	// ResponseTypeCode is the authorization code grant response_type (RFC 6749 Section 4.1.1).
 	ResponseTypeCode = "code"
 )
+
+// OAuth client / redirect resolution errors for the authorization endpoint.
+var (
+	ErrOauthUnknownClient    = errors.New("oauth: unknown client_id")
+	ErrOauthRedirectMismatch = errors.New("oauth: redirect_uri is not registered for this client")
+	ErrOauthRedirectRequired = errors.New("oauth: redirect_uri is required when zero or multiple URIs are registered")
+)
+
+// OauthClientsRepository is the persistence contract the usecase depends on
+// for resolving redirect URIs against registered oauth_clients rows.
+type OauthClientsRepository interface {
+	// GetOauthClientRedirectUrisByClientID returns the registered redirect URIs
+	// for the given client_id. It returns pgx.ErrNoRows when the client is
+	// unknown.
+	GetOauthClientRedirectUrisByClientID(ctx context.Context, clientID uuid.UUID) ([]string, error)
+}
+
+// OauthClientsUsecase is the business-rules contract the HTTP controller
+// depends on for OAuth client redirection resolution (RFC 6749 Section 3.1.2).
+type OauthClientsUsecase interface {
+	// EffectiveRedirectURI returns the redirection URI for the authorization
+	// response. See RFC 6749 Section 3.1.2.3.
+	EffectiveRedirectURI(ctx context.Context, clientID uuid.UUID, requested string) (string, error)
+	// ValidateClientRedirectURI reports whether redirectURI is registered for
+	// the given clientID.
+	ValidateClientRedirectURI(ctx context.Context, clientID uuid.UUID, redirectURI string) (bool, error)
+}
 
 // AuthorizationRequest holds query parameters for the authorization endpoint (RFC 6749 Section 4.1.1).
 type AuthorizationRequest struct {

@@ -13,6 +13,7 @@ type AppConfig struct {
 type ServerConfig struct {
 	Address        string `mapstructure:"address"`
 	ContextTimeout int    `mapstructure:"context_timeout"`
+	PublicURL      string `mapstructure:"public_url"`
 }
 
 type DatabaseConfig struct {
@@ -36,12 +37,21 @@ type JWTConfig struct {
 	RefreshTokenSecret     string `mapstructure:"refresh_token_secret"`
 }
 
+type MailConfig struct {
+	Host     string `mapstructure:"host"`
+	Port     int    `mapstructure:"port"`
+	Username string `mapstructure:"username"`
+	Password string `mapstructure:"password"`
+	From     string `mapstructure:"from"`
+}
+
 type Config struct {
 	App      AppConfig      `mapstructure:"app"`
 	Server   ServerConfig   `mapstructure:"server"`
 	Database DatabaseConfig `mapstructure:"database"`
 	Redis    RedisConfig    `mapstructure:"redis"`
 	JWT      JWTConfig      `mapstructure:"jwt"`
+	Mail     MailConfig     `mapstructure:"mail"`
 }
 
 func NewConfig() *Config {

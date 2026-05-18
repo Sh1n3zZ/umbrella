@@ -5,19 +5,18 @@ import (
 	"net/http"
 
 	"github.com/gin-gonic/gin"
-	"github.com/jackc/pgx/v5/pgtype"
 
 	"github.com/Sh1n3zZ/umbrella/domain"
-	"github.com/Sh1n3zZ/umbrella/usecase"
+	"github.com/Sh1n3zZ/umbrella/internal/tokenutil"
 )
 
 // OauthController exposes OAuth 2.0 HTTP handlers (RFC 6749).
 type OauthController struct {
-	oauthClients *usecase.OauthClientsUsecase
+	oauthClients domain.OauthClientsUsecase
 }
 
 // NewOauthController constructs a controller backed by oauth client use cases.
-func NewOauthController(oauthClients *usecase.OauthClientsUsecase) *OauthController {
+func NewOauthController(oauthClients domain.OauthClientsUsecase) *OauthController {
 	return &OauthController{oauthClients: oauthClients}
 }
 
@@ -41,18 +40,12 @@ func (c *OauthController) Authorization(ctx *gin.Context) {
 		return
 	}
 
-	var clientID pgtype.UUID
-	if err := clientID.Scan(req.ClientID.String()); err != nil {
-		ctx.JSON(http.StatusBadRequest, domain.ErrorResponse{Message: "client_id must be a UUID"})
-		return
-	}
-
-	effectiveRedirect, err := c.oauthClients.EffectiveRedirectURI(rctx, clientID, req.RedirectURI)
+	effectiveRedirect, err := c.oauthClients.EffectiveRedirectURI(rctx, req.ClientID, req.RedirectURI)
 	if err != nil {
 		switch {
-		case errors.Is(err, usecase.ErrOauthUnknownClient),
-			errors.Is(err, usecase.ErrOauthRedirectMismatch),
-			errors.Is(err, usecase.ErrOauthRedirectRequired):
+		case errors.Is(err, domain.ErrOauthUnknownClient),
+			errors.Is(err, domain.ErrOauthRedirectMismatch),
+			errors.Is(err, domain.ErrOauthRedirectRequired):
 			ctx.JSON(http.StatusBadRequest, domain.ErrorResponse{Message: err.Error()})
 		default:
 			ctx.JSON(http.StatusInternalServerError, domain.ErrorResponse{Message: "failed to process authorization request"})
@@ -84,7 +77,7 @@ func (c *OauthController) Authorization(ctx *gin.Context) {
 		return
 	}
 
-	code, err := c.oauthClients.GenerateURLSafeRandomString(32)
+	code, err := tokenutil.GenerateURLSafeRandomString(32)
 	if err != nil {
 		redir := domain.AuthorizationRedirectError{
 			RedirectURI: effectiveRedirect,

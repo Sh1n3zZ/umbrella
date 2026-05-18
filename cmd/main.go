@@ -16,12 +16,14 @@ func main() {
 
 	db := app.DB
 	defer app.CloseDBConnection()
+	defer app.CloseMailClient()
+	defer app.CloseRedis()
 
 	timeout := time.Duration(env.Server.ContextTimeout) * time.Second
 
 	gin := gin.Default()
 
-	route.Setup(env, timeout, db, gin)
+	route.Setup(env, timeout, db, app.Mail, app.Cache, gin)
 
 	gin.Run(env.Server.Address)
 }
